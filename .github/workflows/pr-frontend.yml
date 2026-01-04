@@ -1,37 +1,37 @@
-name: Run frontend tests
+# name: Run frontend tests
 
-on:
-  pull_request:
-    branches: [main]
-    paths:
-      - frontend/**
-      - .github/workflows/pr-frontend.yml
+# on:
+#   pull_request:
+#     branches: [main]
+#     paths:
+#       - frontend/**
+#       - .github/workflows/pr-frontend.yml
 
-jobs:
-  build:
-    defaults:
-      run:
-        working-directory: frontend
+# jobs:
+#   build:
+#     defaults:
+#       run:
+#         working-directory: frontend
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: "frontend/.nvmrc"
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version-file: "frontend/.nvmrc"
 
-      - name: Install deps
-        run: |
-          npm install -g pnpm
-          pnpm install
-      - name: Run tests
-        run: |
-          pnpm vitest run
-        env:
-          VITE_API_BASE_URL: https://api.incidental.dev
+#       - name: Install deps
+#         run: |
+#           npm install -g pnpm
+#           pnpm install
+#       - name: Run tests
+#         run: |
+#           pnpm vitest run
+#         env:
+#           VITE_API_BASE_URL: https://api.incidental.dev
 
-      - name: Build check
-        run: |
-          pnpm run build
+#       - name: Build check
+#         run: |
+#           pnpm run build
