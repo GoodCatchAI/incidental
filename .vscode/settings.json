@@ -1,5 +1,5 @@
 {
-  "finnai.language": "javascript",
-  "finnai.useDefaultRules": true,
-  "finnai.enabled": true
+  "ScrubbyAI.language": "javascript",
+  "ScrubbyAI.useDefaultRules": true,
+  "ScrubbyAI.enabled": true
 }
