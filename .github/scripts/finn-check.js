@@ -273,7 +273,7 @@ If no violations, return: { "violations": [] }`;
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
-        'Content-Length': data.length
+        'Content-Length': Buffer.byteLength(data, 'utf8')
       }
     };
 
