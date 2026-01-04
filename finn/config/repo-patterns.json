@@ -1,0 +1,195 @@
+{
+  "summary": "A React + TypeScript frontend using Vite, styled-components, Formik forms, React Router, and TanStack Query. The codebase follows functional component patterns with hooks, path aliases (@/), and consistent Guard/Layout/Form component abstractions.",
+  "repo_patterns": [
+    {
+      "name": "path_alias_imports",
+      "norm": "All imports use '@/' path alias for src directory instead of relative paths",
+      "examples": [
+        {
+          "file": "frontend/src/components/Button/ConfirmDelete.tsx",
+          "snippet": "import Dialog from '@/components/Dialog/Dialog'\nimport { StyledButton } from '../Theme/Styles'\nimport Button, { ButtonProps } from './Button'"
+        },
+        {
+          "file": "frontend/src/App.tsx",
+          "snippet": "import Debug from '@/components/Debug/Debug'\nimport AuthGuard from '@/components/Guard/AuthGuard'\nimport { ApiServiceProvider } from '@/hooks/useApi'"
+        }
+      ],
+      "description": "Vite configured with '@' alias to './src' for cleaner imports",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.9,
+        "category": "positive",
+        "rationale": "Path aliases eliminate brittle relative paths (../../..), improve refactorability, and enhance code readability. Industry standard practice.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Aligns with maintainability principles. Used by major projects (Next.js default, Create React App, Vite). Reduces coupling to directory structure."
+      }
+    },
+    {
+      "name": "formik_yup_validation",
+      "norm": "Forms use Formik for state management and Yup for validation schemas, with typed form values interfaces",
+      "examples": [
+        {
+          "file": "frontend/src/components/LoginForm/LoginForm.tsx",
+          "snippet": "const validationSchema = Yup.object().shape({\n  emailAddress: Yup.string().required('An email address is required').email(),\n  password: Yup.string().required('A password is required').min(8)\n})"
+        },
+        {
+          "file": "frontend/src/components/Invite/InviteForm.tsx",
+          "snippet": "export interface FormValues {\n  emailAddress: string\n}\n<Formik<FormValues> validationSchema={validationSchema} initialValues={defaultValues} onSubmit={onSubmit}>"
+        }
+      ],
+      "description": "Consistent form handling pattern across all form components with TypeScript interfaces",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.75,
+        "category": "positive",
+        "rationale": "Solid, battle-tested form solution with declarative validation. TypeScript integration ensures type safety. Well-documented and widely adopted.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Follows separation of concerns (state vs validation). Yup schemas are declarative and reusable. Consider React Hook Form as modern alternative for better performance."
+      }
+    },
+    {
+      "name": "styled_components_transient_props",
+      "norm": "styled-components use $ prefix for transient props to avoid passing to DOM",
+      "examples": [
+        {
+          "file": "frontend/src/components/Dialog/Dialog.tsx",
+          "snippet": "type WrapperProps = {\n  $size?: Sizes\n}\nconst Wrapper = styled.div<WrapperProps>`\n  max-width: ${({ $size }) => {...}}`"
+        },
+        {
+          "file": "frontend/src/components/Button/Button.tsx",
+          "snippet": "export interface ButtonProps extends HTMLButtonProps, StyledButtonCustomProps {\n  whyDisabledText?: string\n}\n<StyledButton id={id} {...props} data-tooltip-id={id}>"
+        }
+      ],
+      "description": "Prevents React warnings by using $ prefix for style-only props",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.85,
+        "category": "positive",
+        "rationale": "Prevents React warnings about non-standard DOM attributes. Follows styled-components v5.1+ best practices for performance and cleanliness.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Official styled-components recommendation. Improves DOM hygiene and prevents prop pollution. Clear semantic distinction between styling and DOM props."
+      }
+    },
+    {
+      "name": "guard_component_pattern",
+      "norm": "Route guards use PropsWithChildren, useState/useEffect for conditional rendering or redirects",
+      "examples": [
+        {
+          "file": "frontend/src/components/Guard/AuthGuard.tsx",
+          "snippet": "const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {\n  const [redirect, setRedirect] = useState(false)\n  if (redirect) return <Navigate to={RoutePaths.LOGIN} />\n  return children\n}"
+        },
+        {
+          "file": "frontend/src/components/Guard/SlackInstallGuard.tsx",
+          "snippet": "const SlackInstallGuard: React.FC<PropsWithChildren> = ({ children }) => {\n  const [shouldRedirect, setShouldRedirect] = useState(false)\n  if (shouldRedirect) return <Navigate to={RoutePaths.SLACK_INSTALL} />\n}"
+        }
+      ],
+      "description": "Declarative guard components wrap routes to enforce access rules",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.65,
+        "category": "neutral",
+        "rationale": "Functional approach but useState/useEffect for guards can cause render flickers and race conditions. Lacks centralized authorization logic.",
+        "recommendation": "improve",
+        "alignment_with_best_practices": "Concept aligns with security best practices. Implementation needs refinement: use loader-based guards (React Router 6.4+) or layout-level checks to avoid unnecessary renders."
+      }
+    },
+    {
+      "name": "layout_outlet_pattern",
+      "norm": "Layout components use fixed sidebar + flexible content area with React Router Outlet",
+      "examples": [
+        {
+          "file": "frontend/src/components/Layout/DefaultLayout.tsx",
+          "snippet": "return (\n  <Container>\n    <LeftColumn><DefaultSideBar user={user} /></LeftColumn>\n    <RightColumn><Outlet /></RightColumn>\n  </Container>\n)"
+        },
+        {
+          "file": "frontend/src/components/Layout/SettingsLayout.tsx",
+          "snippet": "return (\n  <Container>\n    <LeftColumn><SettingsSidebar user={user} /></LeftColumn>\n    <RightColumn><Outlet /></RightColumn>\n  </Container>\n)"
+        }
+      ],
+      "description": "Consistent grid-based layout with 220px sidebar across different sections",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.9,
+        "category": "positive",
+        "rationale": "Leverages React Router's composition model correctly. Promotes DRY principle for shared layouts. Clean separation of layout and content concerns.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Standard React Router pattern. Enables nested routing, consistent UX, and efficient code reuse. Aligns with component composition principles."
+      }
+    },
+    {
+      "name": "enum_based_routing",
+      "norm": "Routes defined in centralized RoutePaths enum, used with generatePath for type-safe navigation",
+      "examples": [
+        {
+          "file": "frontend/src/routes.ts",
+          "snippet": "export enum RoutePaths {\n  DASHBOARD = '/',\n  SETTINGS_INDEX = '/:organisation/settings',\n  SHOW_INCIDENT = '/incidents/:id'\n}"
+        },
+        {
+          "file": "frontend/src/components/Sidebar/MenuItem.tsx",
+          "snippet": "const params = { ...(pathParams || {}), organisation: organisation.slug }\nreturn <MenuLink to={generatePath(to, params)} $selected={match ? true : false}>"
+        }
+      ],
+      "description": "Type-safe routing with centralized path definitions",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.8,
+        "category": "positive",
+        "rationale": "Centralized route definitions prevent typos and enable type-safe navigation. generatePath provides compile-time safety for route parameters.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Follows DRY and single source of truth principles. Type safety prevents runtime errors. Consider const objects over enums for better tree-shaking in some bundlers."
+      }
+    },
+    {
+      "name": "custom_hooks_pattern",
+      "norm": "Custom hooks (useAuth, useGlobal, useApiService) provide context-based state and services",
+      "examples": [
+        {
+          "file": "frontend/src/components/Guard/AuthGuard.tsx",
+          "snippet": "const { user, setUser } = useAuth()\nconst { apiService } = useApiService()\nif (cookieData && !user) {\n  setUser(cookieData)\n  apiService.setCurrentUser(cookieData)\n}"
+        },
+        {
+          "file": "frontend/src/components/Sidebar/DefaultSidebar.tsx",
+          "snippet": "const { organisationDetails, organisation, setCurrentOrganisation } = useGlobal()\nconst { apiService } = useApiService()"
+        }
+      ],
+      "description": "Hooks abstract context providers for cleaner component code",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.85,
+        "category": "positive",
+        "rationale": "Encapsulates complex logic, promotes reusability, and provides clean API for consuming components. Context integration avoids prop drilling.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Core React pattern for logic extraction. Aligns with hooks philosophy and separation of concerns. Ensure proper memoization to avoid unnecessary re-renders."
+      }
+    },
+    {
+      "name": "field_component_factory",
+      "norm": "Dynamic form field rendering based on field type enums using factory functions",
+      "examples": [
+        {
+          "file": "frontend/src/components/Incident/Field/getFieldComponent.tsx",
+          "snippet": "const getIncidentStatusField = (name: string, statusList: Array<IIncidentStatus>) => {\n  const options = statusList.map((it) => ({ label: it.name, value: it.id }))\n  return <SelectField name={name} options={options} />\n}"
+        },
+        {
+          "file": "frontend/src/components/Incident/FormField.tsx",
+          "snippet": "const inputComponent = getFormFieldComponent(formField.id, formField, statusList, severityList, incidentTypes)\nreturn <div>{inputComponent}</div>"
+        }
+      ],
+      "description": "Factory pattern for rendering different field types dynamically",
+      "category": "neutral_patterns",
+      "quality": {
+        "score": 0.7,
+        "category": "positive",
+        "rationale": "Reduces boilerplate for dynamic forms. Centralized field logic improves maintainability. Enum-based dispatch is predictable and extensible.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Follows Factory pattern and Open/Closed principle. Dynamic rendering based on data is common in form builders. Ensure type safety for field configs and proper error boundaries."
+      }
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2026-01-04T18:28:07.541Z",
+    "filesScanned": 50,
+    "foldersScanned": 22,
+    "language": "javascript"
+  }
+}
