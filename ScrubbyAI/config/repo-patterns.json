@@ -1,0 +1,187 @@
+{
+  "summary": "A React/TypeScript frontend codebase using Formik for forms, styled-components for styling, React Router for navigation, and React Query for data fetching. Strong patterns around custom hooks, guard components, layout composition, and form abstractions.",
+  "repo_patterns": [
+    {
+      "name": "formik_forms_with_validation",
+      "norm": "Forms use Formik with Yup validation schemas, typed values interfaces, and separate onSubmit handlers",
+      "examples": [
+        {
+          "file": "frontend/src/components/LoginForm/LoginForm.tsx",
+          "snippet": "const validationSchema = Yup.object().shape({\n  emailAddress: Yup.string().required('An email address is required').email(),\n  password: Yup.string().required('A password is required').min(8)\n})\n\n<Formik validationSchema={validationSchema} initialValues={{...}} onSubmit={onSubmit}>"
+        },
+        {
+          "file": "frontend/src/components/RegisterForm/RegisterForm.tsx",
+          "snippet": "export interface RegisterFormValues {\n  name: string\n  password: string\n  emailAddress: string\n}\n\nconst validationSchema = Yup.object().shape({...})"
+        }
+      ],
+      "description": "Consistent pattern of defining TypeScript interfaces for form values, creating Yup validation schemas, and passing typed onSubmit handlers. This ensures type safety and validation consistency.",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.9,
+        "category": "positive",
+        "rationale": "Formik with Yup provides robust form management, validation, and TypeScript integration. Separating onSubmit handlers promotes testability and clean architecture.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Aligns with React best practices for form handling, declarative validation, type safety, and separation of concerns. Industry-standard approach used by major applications."
+      }
+    },
+    {
+      "name": "styled_components_with_semantic_names",
+      "norm": "Components use styled-components with semantic PascalCase names like Root, Wrapper, Actions, Header instead of generic names",
+      "examples": [
+        {
+          "file": "frontend/src/components/Dialog/Dialog.tsx",
+          "snippet": "const Root = styled.div`\n  width: 100vw;\n  height: 100vh;\n`\nconst Wrapper = styled.div<WrapperProps>`\n  box-shadow: 0 4px 20px...\n`\nconst DialogContent = styled.div`\n  padding: 1rem;\n`"
+        },
+        {
+          "file": "frontend/src/components/Incident/IncidentRow.tsx",
+          "snippet": "const Root = styled.div`...`\nconst Header = styled.div`...`\nconst Reference = styled.div`...`\nconst Name = styled.div`...`"
+        }
+      ],
+      "description": "Styled components follow semantic naming that describes their purpose in the component hierarchy, making code more readable and self-documenting.",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.85,
+        "category": "positive",
+        "rationale": "Semantic naming (Root, Wrapper, Header) creates self-documenting code and clear component hierarchy. PascalCase follows styled-components conventions.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Follows CSS-in-JS best practices and component composition patterns. Semantic names improve maintainability and code readability significantly."
+      }
+    },
+    {
+      "name": "guard_components_for_auth_and_state",
+      "norm": "Guard components wrap children and handle conditional rendering based on auth/state, using hooks to check conditions and Navigate for redirects",
+      "examples": [
+        {
+          "file": "frontend/src/components/Guard/AuthGuard.tsx",
+          "snippet": "const AuthGuard: React.FC<PropsWithChildren> = ({ children }) => {\n  const { user, setUser } = useAuth()\n  const cookieData = getAuthFromBrowser()\n  \n  if (redirect) {\n    return <Navigate to={RoutePaths.LOGIN} />\n  }\n  return children\n}"
+        },
+        {
+          "file": "frontend/src/components/Guard/ReadyGuard.tsx",
+          "snippet": "const ReadyGuard: React.FC<Props> = ({ children }) => {\n  const worldQuery = useQuery({...})\n  \n  if (worldQuery.status === 'error') {\n    return <p>There was an error...</p>\n  }\n  return children\n}"
+        }
+      ],
+      "description": "Guard components encapsulate authorization and state-checking logic, providing clean separation of concerns and reusable protection patterns across routes.",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.88,
+        "category": "positive",
+        "rationale": "Guard components centralize authorization logic, prevent code duplication, and provide declarative route protection. Clean separation of concerns.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Implements Higher-Order Component pattern effectively. Aligns with React Router best practices for protected routes and authorization boundaries."
+      }
+    },
+    {
+      "name": "custom_hooks_for_state_management",
+      "norm": "Custom hooks (useAuth, useGlobal, useApiService) provide centralized access to context and state, used consistently across components",
+      "examples": [
+        {
+          "file": "frontend/src/components/Guard/AuthGuard.tsx",
+          "snippet": "const { user, setUser } = useAuth()\nconst { apiService } = useApiService()"
+        },
+        {
+          "file": "frontend/src/components/Guard/ReadyGuard.tsx",
+          "snippet": "const { apiService } = useApiService()\nconst { setCurrentOrganisation, setOrganisationDetails } = useGlobal()"
+        }
+      ],
+      "description": "Custom hooks abstract context consumption and provide typed interfaces to global state, ensuring consistent state access patterns throughout the application.",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.92,
+        "category": "positive",
+        "rationale": "Custom hooks encapsulate business logic, provide consistent API access patterns, and enable easy testing. Promotes DRY principle and single source of truth.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Exemplifies React Hooks best practices. Encourages reusability, testability, and clean component logic. Standard pattern in modern React architecture."
+      }
+    },
+    {
+      "name": "layout_composition_with_outlet",
+      "norm": "Layout components define structure (sidebar + content area) and use Outlet from react-router-dom for nested route rendering",
+      "examples": [
+        {
+          "file": "frontend/src/components/Layout/DefaultLayout.tsx",
+          "snippet": "const DefaultLayout = () => {\n  return (\n    <Container>\n      <LeftColumn><DefaultSideBar user={user} /></LeftColumn>\n      <RightColumn><Outlet /></RightColumn>\n    </Container>\n  )\n}"
+        },
+        {
+          "file": "frontend/src/components/Layout/SettingsLayout.tsx",
+          "snippet": "return (\n  <Container>\n    <LeftColumn><SettingsSidebar user={user} /></LeftColumn>\n    <RightColumn><Outlet /></RightColumn>\n  </Container>\n)"
+        }
+      ],
+      "description": "Layouts establish consistent page structure across sections while allowing nested routes to render their content via Outlet, promoting DRY principles.",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.87,
+        "category": "positive",
+        "rationale": "Layout composition with Outlet provides flexible nested routing and consistent UI structure. Reduces duplication and centralizes layout logic.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Follows React Router v6+ recommended patterns for nested layouts. Promotes component composition and declarative routing architecture."
+      }
+    },
+    {
+      "name": "enum_route_paths",
+      "norm": "Routes defined as TypeScript enum with descriptive names and path parameters, providing type-safe route references",
+      "examples": [
+        {
+          "file": "frontend/src/routes.ts",
+          "snippet": "export enum RoutePaths {\n  DASHBOARD = '/',\n  SHOW_INCIDENT = '/incidents/:id',\n  SETTINGS_FORMS_EDIT = '/:organisation/settings/forms/:id',\n  STATUS_PAGE_SHOW = '/status-pages/:id'\n}"
+        }
+      ],
+      "description": "Centralizing routes in an enum prevents typos, enables IDE autocomplete, and makes refactoring easier by providing single source of truth for paths.",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.82,
+        "category": "positive",
+        "rationale": "TypeScript enums provide type-safe route references, autocomplete support, and centralized route management. Reduces string literal errors.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Leverages TypeScript effectively for type safety. Prevents runtime errors from typos and provides better refactoring support. Some teams prefer const objects for tree-shaking."
+      }
+    },
+    {
+      "name": "react_class_components_anomaly",
+      "norm": "One class component exists (button-two.tsx) while all other components are functional with hooks, showing inconsistent pattern",
+      "examples": [
+        {
+          "file": "frontend/src/components/Button/button-two.tsx",
+          "snippet": "class SecondButton extends React.Component {\n  render() {\n    return (\n      <>\n        <p>this is a second button</p>\n        <button>Button 2</button>\n      </>\n    )\n  }\n}"
+        }
+      ],
+      "description": "This class component breaks the codebase's functional component pattern. All other components use function declarations with hooks, making this an outlier that should be refactored.",
+      "category": "anti_patterns",
+      "quality": {
+        "score": 0.25,
+        "category": "concerning",
+        "rationale": "Single class component creates inconsistency, increases maintenance burden, and prevents use of hooks. Suggests incomplete migration or technical debt.",
+        "recommendation": "replace",
+        "alignment_with_best_practices": "Class components are legacy pattern. React team recommends functional components with hooks for all new code. Inconsistency violates uniformity principle."
+      }
+    },
+    {
+      "name": "reusable_field_components",
+      "norm": "Form fields abstracted into reusable components (Field, SelectField, CheckboxToggle) that integrate with Formik using useField hook",
+      "examples": [
+        {
+          "file": "frontend/src/components/Form/SelectField.tsx",
+          "snippet": "const SelectField: React.FC<Props> = ({ name, options, ...inputProps }) => {\n  const [field, meta, helpers] = useField(name)\n  \n  const handleChange = async (evt: React.ChangeEvent<HTMLSelectElement>) => {\n    helpers.setValue(evt.target.value)\n  }\n}"
+        },
+        {
+          "file": "frontend/src/components/Form/CheckboxToggle.tsx",
+          "snippet": "const CheckboxToggle: React.FC<Props> = ({ isSelected, onClick }) => {\n  return <Checkbox type=\"checkbox\" checked={isSelected} onClick={onClick} />\n}"
+        }
+      ],
+      "description": "Field components encapsulate Formik integration and styling, providing consistent form controls that automatically handle validation and errors.",
+      "category": "best_practices",
+      "quality": {
+        "score": 0.91,
+        "category": "positive",
+        "rationale": "Abstracted field components with useField integration reduce boilerplate, ensure consistency, and simplify form maintenance. Highly reusable and composable.",
+        "recommendation": "keep",
+        "alignment_with_best_practices": "Exemplifies component composition and DRY principles. Aligns with Formik's recommended patterns and promotes design system thinking."
+      }
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2026-01-04T22:07:09.011Z",
+    "filesScanned": 50,
+    "foldersScanned": 23,
+    "language": "javascript"
+  }
+}

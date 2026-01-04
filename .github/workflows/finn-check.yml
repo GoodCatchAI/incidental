@@ -1,0 +1,120 @@
+name: FinnAI Pattern Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  finn-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for pattern configuration
+        id: check-config
+        run: |
+          if [ -f "finn/config/repo-patterns.json" ]; then
+            echo "config_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "config_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run FinnAI pattern check
+        if: steps.check-config.outputs.config_exists == 'true'
+        id: finn-check
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          node .github/scripts/finn-check.js
+        continue-on-error: true
+
+      - name: Read check results
+        if: steps.check-config.outputs.config_exists == 'true'
+        id: results
+        run: |
+          if [ -f "finn-check-results.json" ]; then
+            echo "results_exist=true" >> $GITHUB_OUTPUT
+            VIOLATIONS_COUNT=$(jq '.violations | length' finn-check-results.json)
+            echo "violations_count=$VIOLATIONS_COUNT" >> $GITHUB_OUTPUT
+
+            # Store the report content
+            REPORT=$(cat finn-check-report.md)
+            echo "report<<EOF" >> $GITHUB_OUTPUT
+            echo "$REPORT" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "results_exist=false" >> $GITHUB_OUTPUT
+            echo "violations_count=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post PR comment
+        if: steps.check-config.outputs.config_exists == 'true' && steps.results.outputs.results_exist == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('finn-check-report.md', 'utf8');
+
+            // Find existing FinnAI comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const finnComment = comments.find(comment =>
+              comment.body.includes('🛡️ FinnAI Pattern Check')
+            );
+
+            const commentBody = report;
+
+            if (finnComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: finnComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+      - name: Generate changelog entry if violations fixed
+        if: steps.check-config.outputs.config_exists == 'true' && steps.results.outputs.violations_count == '0'
+        run: |
+          # Note: Changelog is generated but not committed (requires write permissions)
+          # To enable auto-commit, grant workflow write permissions in repo settings
+          node .github/scripts/update-changelog.js || true
+
+      - name: Fail if violations found
+        if: steps.results.outputs.violations_count != '0'
+        run: |
+          echo "❌ Found ${{ steps.results.outputs.violations_count }} pattern violation(s)"
+          exit 1
+
+      - name: Skip if no config
+        if: steps.check-config.outputs.config_exists == 'false'
+        run: |
+          echo "ℹ️  No FinnAI configuration found. Skipping pattern check."
+          echo "Run 'FinnAI: Discover Code Patterns' in VS Code to set up pattern checking."
